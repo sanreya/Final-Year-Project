@@ -54,4 +54,24 @@ public class AuthController {
     public ResponseEntity<String> register(@RequestBody User user) {
         return userService.saveUser(user);
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String token) {
+        try {
+            String jwt = token.substring(7); // Remove "Bearer "
+            String email = jwtUtil.extractUsername(jwt); // Extract email from token
+
+            User user = userService.getUserByEmail(email);
+
+            if (user == null) {
+                return ResponseEntity.status(404).body("User not found");
+            }
+
+            user.setPassword(null); // Hide password
+            return ResponseEntity.ok(user);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Invalid token");
+        }
+    }
 }
